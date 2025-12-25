@@ -1,0 +1,19 @@
+# Reference whisper.cpp directory (not used at runtime)
+whisper.cpp/
+
+# Lua cache
+*.luac
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vim/
+
+# Testing
+test/
+tests/

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(whisper-cli:*)",
+      "Bash(whisper-stream:*)",
+      "WebSearch"
+    ]
+  }
+}
