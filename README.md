@@ -1,4 +1,4 @@
-# speak-to.nvim
+# whisper.nvim
 
 Speech-to-text for Neovim using whisper.cpp
 
@@ -28,9 +28,9 @@ brew install whisper-cpp
 
 ```lua
 {
-  'Avi-D-coder/speak-to.nvim',
+  'Avi-D-coder/whisper.nvim',
   config = function()
-    require('speak-to').setup()
+    require('whisper').setup()
   end,
 }
 ```
@@ -39,9 +39,9 @@ Or with lazy loading on keybind:
 
 ```lua
 {
-  'Avi-D-coder/speak-to.nvim',
+  'Avi-D-coder/whisper.nvim',
   config = function()
-    require('speak-to').setup({
+    require('whisper').setup({
       model = 'base.en',
       keybind = '<C-g>',
     })
@@ -69,7 +69,7 @@ On first use, the plugin will automatically download the whisper base.en model (
 Default configuration:
 
 ```lua
-require('speak-to').setup({
+require('whisper').setup({
   -- Binary detection
   binary_path = nil,  -- Auto-detect if nil
 
@@ -96,7 +96,7 @@ require('speak-to').setup({
 
   -- Debug settings
   debug = false,                        -- Enable debug messages
-  debug_file = '/tmp/speak-to-debug.log', -- Debug log file path
+  debug_file = '/tmp/whisper-debug.log', -- Debug log file path
 
   -- Keybindings
   keybind = '<C-g>',
@@ -116,20 +116,22 @@ By default (`enable_streaming = true`), you can manually trigger text insertion 
 5. All `[BLANK_AUDIO]`, `[MUSIC]`, `(beeping)`, and similar markers are automatically filtered out
 
 **Manual Trigger Key:**
-The `manual_trigger_key` (default: `<Space>`) triggers transcription processing. When you press Space:
+The `manual_trigger_key` (default: `<Space>`) triggers transcription processing. When you press the trigger key:
 1. Shows "Processing..." message
 2. Waits for whisper-stream to process the current audio (depends on `step_ms`)
 3. Automatically inserts text as soon as it's available
-4. In insert mode, still types a space character after inserting transcription
+4. In insert mode, still types the original character after inserting transcription
 
-**Important:** The Space bar responsiveness depends on `step_ms`:
+The trigger key is **temporarily hijacked** during recording and **automatically restored** when recording stops. Any existing keybinding on that key will work normally when not recording.
+
+**Important:** The trigger key responsiveness depends on `step_ms`:
 - **Default (20s)**: Battery friendly, but Space may take up to 20 seconds to insert text
 - **Fast (5s)**: More responsive Space bar, but uses more CPU/GPU
 - **Real-time (3s)**: Very responsive, highest CPU/GPU usage
 
 To make Space bar more responsive, set a lower `step_ms`:
 ```lua
-require('speak-to').setup({
+require('whisper').setup({
   step_ms = 5000,   -- Process every 5 seconds (Space responds within 5s)
   length_ms = 8000, -- Increase buffer for better accuracy
 })
@@ -137,7 +139,7 @@ require('speak-to').setup({
 
 **To disable streaming** (only insert when recording stops):
 ```lua
-require('speak-to').setup({
+require('whisper').setup({
   enable_streaming = false,
 })
 ```
@@ -191,7 +193,7 @@ You can add a status indicator to your lualine configuration:
 require('lualine').setup({
   sections = {
     lualine_x = {
-      require('speak-to').lualine_component,
+      require('whisper').lualine_component,
       'encoding',
       'fileformat',
       'filetype'
@@ -210,16 +212,16 @@ This will show:
 
 ## Commands
 
-- `:SpeakToToggle` - Toggle recording (same as keybind)
-- `:SpeakToDownloadModel [model]` - Download a specific model
-- `:checkhealth speak-to` - Check plugin health and configuration
+- `:WhisperToggle` - Toggle recording (same as keybind)
+- `:WhisperDownloadModel [model]` - Download a specific model
+- `:checkhealth whisper` - Check plugin health and configuration
 
 ## Troubleshooting
 
 ### Check plugin status
 
 ```vim
-:checkhealth speak-to
+:checkhealth whisper
 ```
 
 This will verify:
@@ -241,7 +243,7 @@ This will verify:
 **"Model download failed"**
 - Check internet connection
 - Manually download from: https://huggingface.co/ggerganov/whisper.cpp
-- Place in: `~/.local/share/nvim/speak-to/models/`
+- Place in: `~/.local/share/nvim/whisper/models/`
 
 **"Text not appearing"**
 - Press **Space** to manually insert current transcription
@@ -256,13 +258,21 @@ This will verify:
 - Don't move cursor during recording (text inserts at initial position)
 - Or disable streaming: `enable_streaming = false`
 
-**"Space bar not working"**
-- Space only triggers insertion while recording is active
-- In insert mode, space still types a space character after inserting transcription
+**"Trigger key not working"**
+- The trigger key (default: Space) only works while recording is active
+- In insert mode, the key still types its normal character after inserting transcription
+- The trigger keybinding is automatically restored to its original function when recording stops
+
+**Customizing the trigger key:**
+```lua
+require('whisper').setup({
+  manual_trigger_key = '<Tab>',  -- Use Tab instead of Space
+})
+```
 
 **Debug logging:**
 - Enable debug mode: `debug = true` in your config
-- View debug log: `cat /tmp/speak-to-debug.log` (or `tail -f` for live updates)
+- View debug log: `cat /tmp/whisper-debug.log` (or `tail -f` for live updates)
 - Debug logs to file only (no notification spam)
 - Debug log shows:
   - Recording lifecycle events
@@ -278,7 +288,7 @@ The plugin supports the following whisper models:
 - **base.en** (148 MB) - Default, good balance of speed and accuracy
 - **small.en** (488 MB) - High accuracy, slower
 
-Models are stored in: `~/.local/share/nvim/speak-to/models/`
+Models are stored in: `~/.local/share/nvim/whisper/models/`
 
 ## Platform Support
 
