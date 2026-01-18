@@ -35,6 +35,11 @@ M.defaults = {
   llm = {
     enabled = false, -- Not implemented in v0.1
   },
+
+  -- Optional callback invoked after text is inserted.
+  -- Signature: function(info) where info = { buf = number, row = number, col = number, text = string }
+  -- Default: nil (no callback)
+  post_insert = nil,
 }
 
 M.config = nil
