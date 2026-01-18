@@ -22,6 +22,34 @@ M.insert_text = function(text)
     -- Visual mode: replace selection
     vim.cmd('normal! c')
     vim.api.nvim_put({ text }, 'c', true, true)
+  else
+    vim.api.nvim_put({ text }, 'c', true, true)
+  end
+
+  -- Post-insert hook: call config callback + fire a User autocmd
+  local config = require('whisper.config').get()
+  local ok, cur = pcall(vim.api.nvim_win_get_cursor, 0)
+  if ok and cur then
+    local buf = vim.api.nvim_get_current_buf()
+    local row = cur[1]
+    local col = cur[2]
+
+    -- Schedule callback and autocmd on the main loop to allow plugin callbacks to use Neovim API
+    vim.schedule(function()
+      -- Safe callback
+      if config and config.post_insert and type(config.post_insert) == 'function' then
+        local ok_cb, err = pcall(config.post_insert, { buf = buf, row = row, col = col, text = text })
+        if not ok_cb then
+          vim.notify('whisper.nvim: post_insert callback error: ' .. tostring(err), vim.log.levels.ERROR)
+        end
+      end
+
+      -- Publish last insert info for autocmds
+      vim.b.whisper_last_insert = { buf = buf, row = row, col = col, text = text }
+
+      -- Trigger a User autocommand that users can listen for
+      pcall(vim.cmd, 'doautocmd User WhisperNvimPostInsert')
+    end)
   end
 end
 
